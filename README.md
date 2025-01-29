@@ -55,7 +55,9 @@ Rs = 580R
 
 ```
 
-These values were then used to design the circuit below: 
+These values were then used to design the circuit below:
+
+[line-voltage](./images/line-voltage-measurement.png)
 
 ### Sampling and ADC measurement
 STM32 is a 3.3V 12-bit unipolar ADC. Using this the current and voltage measurement circuits above had to be within this range. So DC biasing method using a potential divider is provided. The circuit is shown below.  
