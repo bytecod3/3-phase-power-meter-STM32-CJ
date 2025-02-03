@@ -95,7 +95,7 @@ int main(void)
   // INITIALIZE OLED screen
   SSD1306_Init();
   SSD1306_GotoXY(0, 0);
-  SSD1306_Puts("3-phase meter", &Font_11x18, 1);
+  SSD1306_Puts("3-phase power meter", &Font_11x18, 1);
   SSD1306_UpdateScreen(); // update screen
 
   /* USER CODE END 2 */
@@ -113,7 +113,7 @@ int main(void)
 
 	  // calculate the power
 
-	  // display on the screen
+	  /* OLED screen control */
 
 	  // display line voltage
 	  int flt = 123.45;
@@ -139,8 +139,14 @@ int main(void)
 	  SSD1306_Puts(buf_flt, &Font_11x18, 1);
 
 	  // clear screen
+	  SSD1306_Clear();
 
-	  /* OLED screen control */
+	  HAL_Delay(2000);
+
+	  // display the calculated power
+
+
+
 
   }
   /* USER CODE END 3 */
