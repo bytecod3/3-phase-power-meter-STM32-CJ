@@ -41,7 +41,7 @@ Rburden = Peak voltage / CT output = 3.3V/40mA = 82.5 mOhm standard = 82 Ohm
 We need to add a bias voltage to shift this up to 1.65V mid defore feeding to STM32 ADC.
 
 Below shows the circuit for this purpose:
-[line-voltage](./images/phase_current_measurement.png)
+[line-current](./images/phase_current_measurement.png)
 
 The current transformers are conneted on the phase lines , where the phase line passes through the current transformer.
 
@@ -83,7 +83,7 @@ This circuit sets the voltage midpoint to around 1.65V when the current or volta
 
 ### Power calculation 
 3-phase power is calculated as follows: 
-Assuming balanced s-phase system, the formula is:
+Assuming balanced 3-phase system, the formula for real(ACTIVE) power is:
 ```
 Power = sqrt(3) * Line voltage * line current * power factor
 ```
@@ -96,6 +96,129 @@ I2C for the screen is used in fast mode
 The firmware follows the following procedure for this meter:
 #### 1. Initialize all hardware 
 #### 2. Sample the phase voltage 
+```
+/**
+ * Read voltage from an ADC channel
+ */
+uint32_t readADC_Voltage(uint32_t CHANNEL) {
+	ADC_CH_Cfg.Channel = CHANNEL;
+	HAL_ADC_ConfigChannel(&hadc1, &ADC_CH_Cfg);
+
+	HAL_ADC_Start(&hadc1);
+	HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+	return HAL_ADC_GetValue(&hadc1);
+}
+....
+uint32_t red_curr = readADC_Current(ADC_CHANNEL_5);
+uint32_t green_curr = readADC_Current(ADC_CHANNEL_6);
+uint32_t yellow_curr = readADC_Current(ADC_CHANNEL_7);
+uint32_t neutral_curr = readADC_Current(ADC_CHANNEL_8);
+
+```
 #### 3. Sample the phase current
-#### 4. Calculate the AC power 
+
+```
+/**
+ * Read current from an ADC channel
+ */
+uint32_t readADC_Current(uint32_t CHANNEL) {
+
+	ADC_CH_Cfg.Channel = CHANNEL;
+	HAL_ADC_ConfigChannel(&hadc1, &ADC_CH_Cfg);
+
+	HAL_ADC_Start(&hadc1);
+	HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+	return HAL_ADC_GetValue(&hadc1);
+}
+
+
+...
+
+uint32_t red_voltage = readADC_Voltage(ADC_CHANNEL_2);
+uint32_t green_voltage = readADC_Voltage(ADC_CHANNEL_3);
+uint32_t yellow_voltage = readADC_Voltage(ADC_CHANNEL_4);
+
+
+```
+
+#### 4. Calculate the AC ACTIVE power 
+Here I assumed the system is a balanced 3-Phase system:
+```
+// calculate the ACTIVE power
+// get average values - ASSUMING BALANCED SYSTEM
+uint32_t v_line_votlage_avg = (red_voltage + green_voltage + yellow_voltage) / 3;
+uint32_t v_line_current_avg = (red_curr + green_curr + yellow_curr + neutral_curr) / 4;
+
+char power_buff[7];
+uint32_t total_power = sqrt(3) * v_line_avg * v_line_current_avg;  // assume power factor
+sprintf(power_buff, "%d", total_power);
+
+
+```
+
 #### 5. Display these values on the screen 
+Screen used here is teh OLED SSD1306 I2C screen.  
+I used blocking code here. This can and should be improved to non-blocking, or use Free RTOS tasks to perfom the reading. Here's the code: 
+
+```
+
+SSD1306_GotoXY(5, 0);
+SSD1306_Puts("R-Ph(V):", &Font_11x18, 1);
+SSD1306_GotoXY(15, 5);
+SSD1306_Puts(red_voltage_buff, &Font_11x18, 1);
+
+// green phase voltage
+SSD1306_GotoXY(5, 0);
+SSD1306_Puts("G-Ph(V):", &Font_11x18, 1);
+SSD1306_GotoXY(15, 5);
+SSD1306_Puts(green_voltage_buff, &Font_11x18, 1);
+
+// yellow phase voltage
+SSD1306_GotoXY(5, 0);
+SSD1306_Puts("Y-Ph(V):", &Font_11x18, 1);
+SSD1306_GotoXY(15, 5);
+SSD1306_Puts(yellow_voltage_buff, &Font_11x18, 1);
+SSD1306_Clear();
+
+HAL_Delay(2000); // TODO: MAKE THIS NON-BLOCKING
+
+// display line currents
+// red phase voltage
+SSD1306_GotoXY(5, 0);
+SSD1306_Puts("R-Ph(I):", &Font_11x18, 1);
+SSD1306_GotoXY(15, 5);
+SSD1306_Puts(red_curr_buff, &Font_11x18, 1);
+
+// green phase voltage
+SSD1306_GotoXY(5, 0);
+SSD1306_Puts("G-Ph(I):", &Font_11x18, 1);
+SSD1306_GotoXY(15, 5);
+SSD1306_Puts(green_curr_buff, &Font_11x18, 1);
+
+// yellow phase voltage
+SSD1306_GotoXY(5, 0);
+SSD1306_Puts("Y-Ph(I):", &Font_11x18, 1);
+SSD1306_GotoXY(15, 5);
+SSD1306_Puts(yellow_curr_buff, &Font_11x18, 1);
+SSD1306_Clear();
+
+// yellow phase voltage
+SSD1306_GotoXY(5, 0);
+SSD1306_Puts("N-Ph(I):", &Font_11x18, 1);
+SSD1306_GotoXY(15, 5);
+SSD1306_Puts(neutral_curr_buff, &Font_11x18, 1);
+SSD1306_Clear();
+
+HAL_Delay(2000); // TODO - MAKE THIS NON-BOCKING
+
+// display the calculated active power
+SSD1306_GotoXY(5, 0);
+SSD1306_Puts("Power:", &Font_11x18, 1);
+SSD1306_GotoXY(15, 5);
+SSD1306_Puts(power_buff, &Font_11x18, 1);
+SSD1306_Clear();
+
+```
+
+### Conclusion 
+All deliverables met

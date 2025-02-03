@@ -22,6 +22,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "ssd1306.h"
+#include "math.h"
 
 /* USER CODE END Includes */
 
@@ -146,52 +147,104 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
 	  // read current for each phase
+	  char red_curr_buff[7];
+	  char green_curr_buff[7];
+	  char yellow_curr_buff[7];
+	  char neutral_curr_buff[7];
+
 	  uint32_t red_curr = readADC_Current(ADC_CHANNEL_5);
 	  uint32_t green_curr = readADC_Current(ADC_CHANNEL_6);
 	  uint32_t yellow_curr = readADC_Current(ADC_CHANNEL_7);
 	  uint32_t neutral_curr = readADC_Current(ADC_CHANNEL_8);
 
-	  // read line voltage
-	  uint32_t red_voltage = readADC_Voltage(ADC_CHANNEL_2);
-	  uint32_t green_voltage = readADC_Voltage(ADC_CHANNEL_2);
-	  uint32_t yellow_voltage = readADC_Voltage(ADC_CHANNEL_2);
+	  // copy into buffer
+	  sprintf(red_curr_buff, "%d", red_curr);
+	  sprintf(green_curr_buff, "%d", green_curr);
+	  sprintf(yellow_curr_buff, "%d", yellow_curr);
+	  sprintf(neutral_curr_buff, "%d", neutral_curr);
 
-	  // calculate the power
+	  // read line voltage
+	  char red_voltage_buff[7];
+	  char green_voltage_buff[7];
+	  char yellow_voltage_buff[7];
+
+	  uint32_t red_voltage = readADC_Voltage(ADC_CHANNEL_2);
+	  uint32_t green_voltage = readADC_Voltage(ADC_CHANNEL_3);
+	  uint32_t yellow_voltage = readADC_Voltage(ADC_CHANNEL_4);
+
+	  // copy into buffer
+	  sprintf(red_voltage_buff, "%d", red_voltage);
+	  sprintf(green_voltage_buff, "%d", green_voltage);
+	  sprintf(yellow_voltage_buff, "%d", yellow_voltage);
+
+	  // calculate the ACTIVE power
+	  // get average values - ASSUMING BALANCED SYSTEM
+	  uint32_t v_line_votlage_avg = (red_voltage + green_voltage + yellow_voltage) / 3;
+	  uint32_t v_line_current_avg = (red_curr + green_curr + yellow_curr + neutral_curr) / 4;
+
+	  char power_buff[7];
+	  uint32_t total_power = sqrt(3) * v_line_avg * v_line_current_avg;  // assume power factor
+	  sprintf(power_buff, "%d", total_power);
 
 	  /* OLED screen control */
 
-	  // display line voltage
-	  int flt = 123.45;
-	  char buf_flt[7];
-	  sprintf(buf_flt, "%d", flt);
-
+	  // display line voltages
 	  // red phase voltage
 	  SSD1306_GotoXY(5, 0);
-	  SSD1306_Puts("R-Ph:", &Font_11x18, 1);
+	  SSD1306_Puts("R-Ph(V):", &Font_11x18, 1);
 	  SSD1306_GotoXY(15, 5);
-	  SSD1306_Puts(buf_flt, &Font_11x18, 1);
+	  SSD1306_Puts(red_voltage_buff, &Font_11x18, 1);
 
 	  // green phase voltage
 	  SSD1306_GotoXY(5, 0);
-	  SSD1306_Puts("G-Ph:", &Font_11x18, 1);
+	  SSD1306_Puts("G-Ph(V):", &Font_11x18, 1);
 	  SSD1306_GotoXY(15, 5);
-	  SSD1306_Puts(buf_flt, &Font_11x18, 1);
+	  SSD1306_Puts(green_voltage_buff, &Font_11x18, 1);
 
 	  // yellow phase voltage
 	  SSD1306_GotoXY(5, 0);
-	  SSD1306_Puts("Y-Ph:", &Font_11x18, 1);
+	  SSD1306_Puts("Y-Ph(V):", &Font_11x18, 1);
 	  SSD1306_GotoXY(15, 5);
-	  SSD1306_Puts(buf_flt, &Font_11x18, 1);
-
-	  // clear screen
+	  SSD1306_Puts(yellow_voltage_buff, &Font_11x18, 1);
 	  SSD1306_Clear();
 
-	  HAL_Delay(2000);
+	  HAL_Delay(2000); // TODO: MAKE THIS NON-BLOCKING
 
-	  // display the calculated power
+	  // display line currents
+	  // red phase voltage
+	  SSD1306_GotoXY(5, 0);
+	  SSD1306_Puts("R-Ph(I):", &Font_11x18, 1);
+	  SSD1306_GotoXY(15, 5);
+	  SSD1306_Puts(red_curr_buff, &Font_11x18, 1);
 
+	  // green phase voltage
+	  SSD1306_GotoXY(5, 0);
+	  SSD1306_Puts("G-Ph(I):", &Font_11x18, 1);
+	  SSD1306_GotoXY(15, 5);
+	  SSD1306_Puts(green_curr_buff, &Font_11x18, 1);
 
+	  // yellow phase voltage
+	  SSD1306_GotoXY(5, 0);
+	  SSD1306_Puts("Y-Ph(I):", &Font_11x18, 1);
+	  SSD1306_GotoXY(15, 5);
+	  SSD1306_Puts(yellow_curr_buff, &Font_11x18, 1);
+	  SSD1306_Clear();
 
+	  // yellow phase voltage
+	  SSD1306_GotoXY(5, 0);
+	  SSD1306_Puts("N-Ph(I):", &Font_11x18, 1);
+	  SSD1306_GotoXY(15, 5);
+	  SSD1306_Puts(neutral_curr_buff, &Font_11x18, 1);
+	  SSD1306_Clear();
+
+	  HAL_Delay(2000); // TODO - MAKE THIS NON-BOCKING
+
+	  // display the calculated active power
+	  SSD1306_GotoXY(5, 0);
+	  SSD1306_Puts("Power:", &Font_11x18, 1);
+	  SSD1306_GotoXY(15, 5);
+	  SSD1306_Puts(power_buff, &Font_11x18, 1);
+	  SSD1306_Clear();
 
   }
   /* USER CODE END 3 */
