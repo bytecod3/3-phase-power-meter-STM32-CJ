@@ -15,6 +15,16 @@
 - Non-Intrusive measurement 
 - No galvanic isolation
 
+### Designed schematic 
+#### CPU
+![CPU](./images/CPU-SECTION.png)
+
+#### Current measurement
+![Current](./images/phase_current_measurement.png)
+
+#### Voltage measurement
+![Voltage](./images/phase-voltage-measurement.png)
+
 ### Power calculation
 The total power for the 3-phase system is given by:
 
@@ -41,7 +51,7 @@ Rburden = Peak voltage / CT output = 3.3V/40mA = 82.5 mOhm standard = 82 Ohm
 We need to add a bias voltage to shift this up to 1.65V mid defore feeding to STM32 ADC.
 
 Below shows the circuit for this purpose:
-[line-current](./images/phase_current_measurement.png)
+![line-current](./images/phase_current_measurement.png)
 
 The current transformers are conneted on the phase lines , where the phase line passes through the current transformer.
 
@@ -75,7 +85,7 @@ Rs = 580R
 
 These values were then used to design the circuit below:
 
-[line-voltage](./images/phase-voltage-measurement.png)
+![line-voltage](./images/phase-voltage-measurement.png)
 
 ### Sampling and ADC measurement
 STM32 is a 3.3V 12-bit unipolar ADC. Using this the current and voltage measurement circuits above had to be within this range. So DC biasing method using a potential divider is provided. The circuit is shown below.  
@@ -96,7 +106,7 @@ I2C for the screen is used in fast mode
 The firmware follows the following procedure for this meter:
 #### 1. Initialize all hardware 
 #### 2. Sample the phase voltage 
-```
+```c
 /**
  * Read voltage from an ADC channel
  */
@@ -117,7 +127,7 @@ uint32_t neutral_curr = readADC_Current(ADC_CHANNEL_8);
 ```
 #### 3. Sample the phase current
 
-```
+```c
 /**
  * Read current from an ADC channel
  */
@@ -143,7 +153,7 @@ uint32_t yellow_voltage = readADC_Voltage(ADC_CHANNEL_4);
 
 #### 4. Calculate the AC ACTIVE power 
 Here I assumed the system is a balanced 3-Phase system:
-```
+```c
 // calculate the ACTIVE power
 // get average values - ASSUMING BALANCED SYSTEM
 uint32_t v_line_votlage_avg = (red_voltage + green_voltage + yellow_voltage) / 3;
@@ -160,7 +170,7 @@ sprintf(power_buff, "%d", total_power);
 Screen used here is teh OLED SSD1306 I2C screen.  
 I used blocking code here. This can and should be improved to non-blocking, or use Free RTOS tasks to perfom the reading. Here's the code: 
 
-```
+```c
 
 SSD1306_GotoXY(5, 0);
 SSD1306_Puts("R-Ph(V):", &Font_11x18, 1);
