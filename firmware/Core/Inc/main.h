@@ -63,6 +63,14 @@ void Error_Handler(void);
 #define GREEN_V_GPIO_Port GPIOA
 #define YELLOW_V_Pin GPIO_PIN_4
 #define YELLOW_V_GPIO_Port GPIOA
+#define CT_RED_Pin GPIO_PIN_5
+#define CT_RED_GPIO_Port GPIOA
+#define CT_GREEN_Pin GPIO_PIN_6
+#define CT_GREEN_GPIO_Port GPIOA
+#define CT_YELLOW_Pin GPIO_PIN_7
+#define CT_YELLOW_GPIO_Port GPIOA
+#define CT_NEUT_Pin GPIO_PIN_0
+#define CT_NEUT_GPIO_Port GPIOB
 #define OLED_SCL_Pin GPIO_PIN_10
 #define OLED_SCL_GPIO_Port GPIOB
 #define OLED_SDA_Pin GPIO_PIN_3

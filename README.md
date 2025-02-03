@@ -31,12 +31,19 @@ The current transformer used here is the CT1275-A1-RC. It has a turns ratio of 1
 
 The output current is transformed to voltage using a burden resistor, then this voltage is sampled and measured by the ADC.  
 
+Calculations were as follows:
+To get the burder resistor, I used the following formula: 
+
+```
+Rburden = Peak voltage / CT output = 3.3V/40mA = 82.5 mOhm standard = 82 Ohm
+```
+
+We need to add a bias voltage to shift this up to 1.65V mid defore feeding to STM32 ADC.
 
 Below shows the circuit for this purpose:
 [line-voltage](./images/phase_current_measurement.png)
 
 The current transformers are conneted on the phase lines , where the phase line passes through the current transformer.
-
 
 Here's the link to the project :
 https://u.easyeda.com/join?type=project&key=e6ed463bb0bcfe54d6addecaed85d314&inviter=dd1664aa981942349eac2c5b2c113172
@@ -74,6 +81,21 @@ These values were then used to design the circuit below:
 STM32 is a 3.3V 12-bit unipolar ADC. Using this the current and voltage measurement circuits above had to be within this range. So DC biasing method using a potential divider is provided. The circuit is shown below.  
 This circuit sets the voltage midpoint to around 1.65V when the current or voltage sensor is not measuring any value. 
 
+### Power calculation 
+3-phase power is calculated as follows: 
+Assuming balanced s-phase system, the formula is:
+```
+Power = sqrt(3) * Line voltage * line current * power factor
+```
+
 ### OLED Display 
 I used the SSD1306 display for this task. This display uses 12C communication with the MCU. To carry out the connection, I initialized the I2C channel 2 on the STM and linked it with the display.
 I2C for the screen is used in fast mode 
+
+### Firmware 
+The firmware follows the following procedure for this meter:
+#### 1. Initialize all hardware 
+#### 2. Sample the phase voltage 
+#### 3. Sample the phase current
+#### 4. Calculate the AC power 
+#### 5. Display these values on the screen 

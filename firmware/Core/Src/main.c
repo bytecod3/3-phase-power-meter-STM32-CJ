@@ -56,10 +56,38 @@ static void MX_I2C2_Init(void);
 static void MX_ADC1_Init(void);
 /* USER CODE BEGIN PFP */
 
+uint32_t readADC_Current(uint32_t CHANNEL);
+uint32_t readADC_Voltage(uint32_t CHANNEL);
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+/**
+ * Read current from an ADC channel
+ */
+uint32_t readADC_Current(uint32_t CHANNEL) {
+
+	ADC_CH_Cfg.Channel = CHANNEL;
+	HAL_ADC_ConfigChannel(&hadc1, &ADC_CH_Cfg);
+
+	HAL_ADC_Start(&hadc1);
+	HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+	return HAL_ADC_GetValue(&hadc1);
+}
+
+/**
+ * Read voltage from an ADC channel
+ */
+uint32_t readADC_Voltage(uint32_t CHANNEL) {
+	ADC_CH_Cfg.Channel = CHANNEL;
+	HAL_ADC_ConfigChannel(&hadc1, &ADC_CH_Cfg);
+
+	HAL_ADC_Start(&hadc1);
+	HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+	return HAL_ADC_GetValue(&hadc1);
+}
 
 /* USER CODE END 0 */
 
@@ -94,7 +122,11 @@ int main(void)
   MX_GPIO_Init();
   MX_I2C2_Init();
   MX_ADC1_Init();
+
   /* USER CODE BEGIN 2 */
+
+  ADC_CH_Cfg.Rank = ADC_REGULAR_RANK_1;
+  ADC_CH_Cfg.samplingTime = ADC_SAMPLETIME_1CYCLE_5;
 
   // INITIALIZE OLED screen
   SSD1306_Init();
@@ -114,6 +146,15 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
 	  // read current for each phase
+	  uint32_t red_curr = readADC_Current(ADC_CHANNEL_5);
+	  uint32_t green_curr = readADC_Current(ADC_CHANNEL_6);
+	  uint32_t yellow_curr = readADC_Current(ADC_CHANNEL_7);
+	  uint32_t neutral_curr = readADC_Current(ADC_CHANNEL_8);
+
+	  // read line voltage
+	  uint32_t red_voltage = readADC_Voltage(ADC_CHANNEL_2);
+	  uint32_t green_voltage = readADC_Voltage(ADC_CHANNEL_2);
+	  uint32_t yellow_voltage = readADC_Voltage(ADC_CHANNEL_2);
 
 	  // calculate the power
 
@@ -221,7 +262,7 @@ static void MX_ADC1_Init(void)
   hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
   hadc1.Init.ScanConvMode = DISABLE;
-  hadc1.Init.ContinuousConvMode = DISABLE;
+  hadc1.Init.ContinuousConvMode = ENABLE;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
