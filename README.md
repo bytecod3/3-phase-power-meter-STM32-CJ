@@ -33,6 +33,9 @@ The output current is transformed to voltage using a burden resistor, then this 
 
 
 Below shows the circuit for this purpose:
+[line-voltage](./images/phase_current_measurement.png)
+
+The current transformers are conneted on the phase lines , where the phase line passes through the current transformer.
 
 
 Here's the link to the project :
@@ -42,7 +45,7 @@ https://u.easyeda.com/join?type=project&key=e6ed463bb0bcfe54d6addecaed85d314&inv
 Line voltage measurement is done using the ZMPT101B voltage transformer. From the datasheet of ZMPT101B, the rated voltage is 240V, and at this voltage, 2mA can be produced on the output.
 Having this info, the following calculations were done:
 
-Limiting restor calculation
+Limiting resistor calculation
 ```
 R'(limiting resistor) = V/I  
 I = 2mA from datasheet, for Vl > 220V
@@ -65,7 +68,7 @@ Rs = 580R
 
 These values were then used to design the circuit below:
 
-[line-voltage](./images/line-voltage-measurement.png)
+[line-voltage](./images/phase-voltage-measurement.png)
 
 ### Sampling and ADC measurement
 STM32 is a 3.3V 12-bit unipolar ADC. Using this the current and voltage measurement circuits above had to be within this range. So DC biasing method using a potential divider is provided. The circuit is shown below.  
